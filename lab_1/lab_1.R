@@ -7,7 +7,7 @@ patients <- read.csv("data/ms_edss.csv", stringsAsFactors = FALSE)
 patients <- as.data.frame(patients)
 
 #Assign some variables of interest
-vars <- c("delta_TotalGrayVol", "delta_edss")
+vars <- c("delta_TotalGrayVol", "delta_edss", "delta_SubCortGrayVol")
 
 #Make sure libraries are available
 library(psych)
@@ -47,3 +47,13 @@ corr.test(patients_nout[,vars])$r^2
 simpleScatter(patients_nout, delta_TotalGrayVol, delta_edss, line=TRUE)
 c_mod2 <- lm(delta_edss ~ delta_TotalGrayVol, patients_nout)
 c_mod2
+
+# Is the change Sub Cortical Gray Matter Volume, a better predictor of overall function change?
+#Run a correlation matrix, and get t, p and r^2 values
+corr.test(patients[,vars])
+
+#Check for linearity
+simpleScatter(patients, delta_SubCortGrayVol, delta_edss, line=TRUE)
+
+#Run a Simple Linear Regression model
+c_mod_sub <- lm(delta_edss ~ delta_SubCortGrayVol, patients)
