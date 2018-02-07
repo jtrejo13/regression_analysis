@@ -31,6 +31,7 @@ cooksPlot(init_model)
 #Remove the highest outlier
 "%not in%" <- Negate("%in%")
 good <- basic[row.names(basic) %not in% (c(208)), ]
+corr.test(good[,vars])$r
 corr.test(good[,vars])$r^2*100
 
 #Re-run the model
