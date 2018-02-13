@@ -21,21 +21,23 @@ summary(q_mod)
 library(car)
 vif(q_mod)
 
-# #Remove the problem independent:
-# q_mod2 <- lm(MS.QoL ~ DREEM.S.SP + Resilience + BDI + Age, data=clinical)
-# summary(q_mod2)
-# vif(q_mod2)
-# 
-# #Good model: Check assumptions
-# residFitted(q_mod2)
-# 
-# #Find the outliers...
-# cooksPlot(q_mod2, key.variable = "IDR", print.obs = TRUE, sort.obs = TRUE)
-# threeOuts(q_mod2, key.variable = "IDR")
-# 
-# #Remove the outlier(s)
-# "%not in%" <- Negate("%in%")
-# good_clin <- clinical[clinical$IDR %not in% c("IDR897"),]
+# Remove weight due to multicolinearity with other independents:
+q_mod2 <- lm(D25 ~ ageyears + D125 + bmi + pth, data=vitamin)
+summary(q_mod2)
+vif(q_mod2)
+
+# Check assumptions
+
+# Homoscedasticity
+residFitted(q_mod2)
+
+#Find the outliers...
+cooksPlot(q_mod2, key.variable = "ID", print.obs = TRUE, sort.obs = TRUE)
+threeOuts(q_mod2, key.variable = "ID")
+
+#Remove the outlier(s)
+"%not in%" <- Negate("%in%")
+good_clin <- clinical[clinical$IDR %not in% c("IDR897"),]
 # 
 # #Final Model
 # q_mod_f <- lm(MS.QoL ~ DREEM.S.SP + Resilience + BDI + Age, data=good_clin)
