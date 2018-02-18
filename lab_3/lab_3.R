@@ -58,3 +58,4 @@ pCorr(q_mod_f) #Partial and Part correlation coefficients
 library(lsmeans)
 ref.grid(q_mod_f)
 lsmeans(q_mod_f, "pth", at=list(pth=80))
+
