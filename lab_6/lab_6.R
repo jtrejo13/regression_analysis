@@ -1,77 +1,70 @@
-#### Here is the R script you will use:  (remember that # indicates a comment) ####
 #Lab6: Categorical Interaction
 
 library(SDSRegressionR)
 
 #Import data...
-work <- read.csv("data/workers.csv", stringsAsFactors=FALSE)
-names(work)
-sing <- work[which(work$Marital.status == "Single"),]
-
+state <- read.csv("data/stateAnx.csv", stringsAsFactors=FALSE)
+names(state)
+ 
 #Examine the categorical variable:
-table(sing$Job)
+table(state$Group)
 
-#Run the Factoring (SupportServices as reference)
-sing$Female_f <- factor(sing$Female, levels=c(0,1), labels=c("Male", "Female"))
-sing$Job_f <- factor(sing$Job, levels=c("SupportServices", "Academic", "Professional"))
+#Run the Factoring (Basic Sciences as reference)
+state$Group_f <- factor(state$Group, labels=c("Basic Sciences", "Clinical Sciences"))
 
 #Initial Model:
 #Run the model (SupportServices as reference)
-hap <- lm(Happiness ~ Age + Female_f + Job_f + Social.support + 
-            Job_f*Social.support, data=sing)
-summary(hap)
+anx <- lm(State.Anxiety ~ Age + BDI + WHOQOL.PSY + Group_f +
+            Group_f*WHOQOL.PSY, data=state)
+summary(anx)
 
 #Check the diagnostics/outliers
-residFitted(hap)
+residFitted(anx)
 library(car)
-vif(hap)
-cooksPlot(hap, key.variable="SubID", print.obs=TRUE, sort.obs=TRUE, save.cutoff=TRUE)
-threeOuts(hap, key.variable="SubID")
+vif(anx)
+cooksPlot(anx, key.variable="IDR", print.obs=TRUE, sort.obs=TRUE, save.cutoff=TRUE)
+threeOuts(anx, key.variable="IDR")
 
 #Get good data
 "%not in%" <- Negate("%in%")
-g_sing <- sing[sing$SubID %not in% c(...),]
+g_state <- state[state$IDR %not in% c("IDR932", "IDR1289", "IDR154", "IDR639", "IDR686"),]
 
 #Re-run the model:
-hap2 <- lm(Happiness ~ Age + Female_f + Job_f + Social.support + 
-             Job_f*Social.support, data=g_sing)
-summary(hap2)
+anx2 <- lm(State.Anxiety ~ Age + BDI + WHOQOL.PSY + Group_f +
+            Group_f*WHOQOL.PSY, data=g_state)
+summary(anx2)
 
 #Check the overall interaction significance
 library(car)
-Anova(hap2, type="III")
+Anova(anx2, type="III")
 
 #Simple Slopes
 library(lsmeans)
-ref.grid(hap2)
-lsmeans(hap2, "Social.support", at=list(Social.support = c(0,1)), by="Job_f")
-mod_means <- lsmeans(hap2, "Social.support", at=list(Social.support = c(0,1)), by="Job_f")
+ref.grid(anx2)
+lsmeans(anx2, "WHOQOL.PSY", at=list(WHOQOL.PSY = c(0,1)), by="Group_f")
+mod_means <- lsmeans(anx2, "WHOQOL.PSY", at=list(WHOQOL.PSY = c(0,1)), by="Group_f")
 pairs(mod_means, reverse=TRUE)
 
 # (difference of differences -- Interaction terms)
 pairs(update(pairs(mod_means, reverse=TRUE), by=NULL), reverse=TRUE, adjust="none")
 
+lmDecomp(anx2, "WHOQOL.PSY", "Group_fClinical Sciences", mod.type=2, print.ros = TRUE)
+
 #CI Plot (for fun)
 library(lsmeans)
-mns <- summary(lsmeans(hap2, "Social.support", at=list(Social.support = seq(0,60,1)), by="Job_f"))
-simpleScatter(g_sing, x=Social.support, y=Happiness, ptalpha = 0,
-              title="Social Support and Happiness by Employment Group") +
-  geom_line(data=mns[mns$Job_f=="SupportServices",], aes(x=Social.support, y=lsmean, color="blue")) +
-  geom_line(data=mns[mns$Job_f=="Academic",], aes(x=Social.support, y=lsmean, color="red")) + 
-  geom_line(data=mns[mns$Job_f=="Professional",], aes(x=Social.support, y=lsmean, color="green")) +
-  geom_ribbon(data=mns[mns$Job_f=="SupportServices",],
-              aes(y=lsmean, ymin=lower.CL, ymax=upper.CL), alpha=0.3) + 
-  geom_ribbon(data=mns[mns$Job_f=="Academic",],
-              aes(y=lsmean, ymin=lower.CL, ymax=upper.CL), alpha=0.3) + 
-  geom_ribbon(data=mns[mns$Job_f=="Professional",],
-              aes(y=lsmean, ymin=lower.CL, ymax=upper.CL), alpha=0.3) + 
+mns <- summary(lsmeans(anx2, "WHOQOL.PSY", at=list(WHOQOL.PSY = seq(16,96,1)), by="Group_f"))
+simpleScatter(g_state, x=WHOQOL.PSY, y=State.Anxiety, ptalpha = 0,
+              title="Quality of Life:Psychological Assessment and State Anxiety by Student Group") +
+  geom_line(data=mns, aes(x=WHOQOL.PSY, y=lsmean, color=Group_f)) +
+  geom_ribbon(data=mns, aes(y=lsmean, ymin=lower.CL, ymax=upper.CL, group=Group_f), alpha=0.3) + 
+  #Change to your group names and number of groups
   scale_colour_manual(name = "Groups", 
-                      values =c("blue", "red", "green"), 
-                      labels = c("SupportServices", "Academic", "Professional"))
+                      values =c("red", "blue"), 
+                      labels = c("Basic Sciences", "Clinical Sciences"))
 
 #Or a straght ggplot...
-ggplot(g_sing,aes(x=Social.support,y=Happiness,color=Job_f)) +
+ggplot(g_state,aes(x=WHOQOL.PSY,y=State.Anxiety,color=Group_f)) +
   stat_smooth(method=lm, se = FALSE, fullrange=TRUE) +
   geom_point() + 
-  labs(title="Job Type Interaction", x="Social.support", y="Happiness") +
+  labs(title="Student Group Type Interaction", x="WHOQOL.PSY", y="State.Anxiety") +
   theme_bw()
