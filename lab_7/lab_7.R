@@ -42,7 +42,7 @@ simple_mns
 pairs(simple_mns, reverse=TRUE)
 
 # And Find the Regions of Significance
-lmDecomp(c_mod2, "School.Connectedness", "Depressive.Sympt", mod.values=c(2.658, 4.358, 6.057),
+lmDecomp(c_mod2, "Depressive.Sympt", "School.Connectedness", mod.values=c(2.658, 4.358, 6.057),
          print.sslopes=FALSE, print.ros=TRUE)
 
 # Better graphs
