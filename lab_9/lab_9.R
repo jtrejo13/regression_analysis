@@ -19,6 +19,7 @@ count(gss, c("educ", "educ1", "educ2", "jump"))
 
 # Inital model run and diagnostics
 full <- lm(realrinc ~ educ1 + jump + educ2, data=gss)
+summary(full)
 residFitted(full)
 cooks <- cooksPlot(full, key.variable="uniqID", print.obs=TRUE, sort.obs = TRUE)
 threeOuts(full, key.variable="uniqID")
