@@ -22,10 +22,14 @@ summary(m_emp)
 x1 <- deviance(multinom(empl~1, data=emp))
 x1
 
-# Overall
-x2 <- deviance(multinom(empl~1, data=emp)) - deviance(m_emp)
+# Full
+x2 <- deviance(m_emp)
 x2
-pchisq(x2, 8, lower.tail=FALSE)
+
+# Overall
+x3 <- deviance(multinom(empl~1, data=emp)) - deviance(m_emp)
+x3
+pchisq(x3, 8, lower.tail=FALSE)
 
 # Model fit:
 library(DescTools)
@@ -68,24 +72,26 @@ table(test_emp$mhs)
 table(test_emp$fhs)
 table(test_emp$empl)
 
-test_buy <- data.frame(test_buy, purch_mod = predict(m_buy, test_buy))
-addmargins(table(test_buy$Purchase, test_buy$purch_mod, dnn=c("Obs", "Predicted")))
+test_emp <- data.frame(test_emp, empl_mod = predict(m_emp, test_emp))
+addmargins(table(test_emp$empl, test_emp$empl_mod, dnn=c("Obs", "Predicted")))
 
-# (2+35+73) / 204
+(7+40+47) / 196 * 100
 # max(c(24/204), (82/204), (98/204))
-# 
-# #Graphing (Original)
-# library(lsmeans)
-# summary(buy)
-# use_mns <- summary(lsmeans(m_buy, c("Purchase", "Usefulness"), 
-#                            at=list(Usefulness=seq(0,10,1))))
-# 
-# ggplot(use_mns, aes(y=prob, x=Usefulness, color=Purchase)) +
-#   geom_line() +
-#   labs(title="Usefulness impact") +
-#   scale_x_continuous(breaks=c(1:10), labels = c(1:10), minor_breaks = NULL) +
-#   theme_bw()
-# 
+
+#Graphing (Original)
+library(lsmeans)
+summary(emp)
+test_mns <- summary(lsmeans(m_emp, c("empl", "wtest"),
+                             at=list(wtest=seq(-2,2))))
+test_mns
+
+
+ggplot(test_mns, aes(y=prob, x=wtest, color=empl)) +
+  geom_line() +
+  labs(title="Aptitude impact") +
+  scale_x_continuous(breaks=c(-2:2), labels = c(-2:2), minor_breaks = NULL) +
+  theme_bw()
+
 # hist(buy$Usefulness)
 # 
 # price_mns <- summary(lsmeans(m_buy, c("Purchase", "Price"), 
