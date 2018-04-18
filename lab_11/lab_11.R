@@ -43,24 +43,6 @@ round(p, 6)
 
 # Odds-ratios
 exp(coef(m_emp))
-# 
-# #Change the baseline:
-# buy$Purchase_Leave <- factor(buy$Purchase, 
-#                              levels=c("Leave Item", "Buy Item", "Wish List"))
-# 
-# #Model_Leave
-# m_buy_l <- multinom(Purchase_Leave ~ Usefulness + Packaging + 
-#                       Price + Gender, data = buy)
-# summary(m_buy_l)
-# 
-# #Individual paramerters_Leave
-# z <- summary(m_buy_l)$coefficients/summary(m_buy_l)$standard.errors
-# z
-# p <- (1 - pnorm(abs(z), 0, 1))*2
-# round(p, 6)
-# 
-# #Odds-ratios_Leave
-# exp(coef(m_buy_l))
 
 # Classification:
 # Bring in new data:
@@ -76,7 +58,6 @@ test_emp <- data.frame(test_emp, empl_mod = predict(m_emp, test_emp))
 addmargins(table(test_emp$empl, test_emp$empl_mod, dnn=c("Obs", "Predicted")))
 
 (7+40+47) / 196 * 100
-# max(c(24/204), (82/204), (98/204))
 
 #Graphing (Original)
 library(lsmeans)
@@ -85,19 +66,8 @@ test_mns <- summary(lsmeans(m_emp, c("empl", "wtest"),
                              at=list(wtest=seq(-2,2))))
 test_mns
 
-
 ggplot(test_mns, aes(y=prob, x=wtest, color=empl)) +
   geom_line() +
   labs(title="Aptitude impact") +
   scale_x_continuous(breaks=c(-2:2), labels = c(-2:2), minor_breaks = NULL) +
   theme_bw()
-
-# hist(buy$Usefulness)
-# 
-# price_mns <- summary(lsmeans(m_buy, c("Purchase", "Price"), 
-#                              at=list(Price=seq(0,10,1))))
-# 
-# ggplot(price_mns, aes(y=prob, x=Price, color=Purchase)) +
-#   geom_line() +
-#   labs(title="Price impact") +
-#   theme_bw()
